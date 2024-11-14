@@ -1,0 +1,56 @@
+
+
+services:
+  server:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    image: myapp-server
+    container_name: myapp-node-server
+    volumes:
+      - ./server/:/usr/src/app
+      - /usr/src/app/node_modules
+    ports:
+      - "4000:4000"
+    depends_on:
+      - mongo
+    env_file: ./server/.env
+    networks:
+      - app-network
+    environment:
+      MONGO_URI: mongodb://mongo:27017/crud
+  mongo:
+    image: mongo
+    container_name: myapp-node-mongo
+    volumes:
+      - data-volume:/data/db
+    ports:
+      - "27017:27017"
+    networks:
+      - app-network
+    restart: always
+  client:
+    build:
+      context: ./frontend/client
+      dockerfile: Dockerfile
+    image: myapp-client
+    container_name: myapp-react-client
+    volumes:
+      - ./frontend/client/:/usr/app
+      - /usr/app/node_modules
+    depends_on:
+      - server
+    ports:
+      - "5173:5173"
+    networks:
+      - app-network
+
+networks:
+    app-network:
+        driver: bridge
+
+volumes:
+    data-volume:
+    node_modules:
+    web-root:
+      driver: local
